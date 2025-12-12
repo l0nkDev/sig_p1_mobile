@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:search_map_place_updated/search_map_place_updated.dart';
 import 'package:sig_p1_mobile/components/bestpathlistmenu.dart';
 import 'package:sig_p1_mobile/components/bestpathmenu.dart';
 import 'package:sig_p1_mobile/components/linesmenu.dart';
 import 'package:sig_p1_mobile/components/radiusmenu.dart';
-import 'package:sig_p1_mobile/models/point.dart';
 import 'package:sig_p1_mobile/models/renderedroute.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -30,14 +30,15 @@ class MapScreenState extends State<MapScreen> {
 
   bool _pickingPosition = false;
   late LatLng _pickedPosition;
-  bool _pickingRadius = false;
+  // bool _pickingRadius = false;
   double _pickedRadius = 50;
 
   bool _pickingOrigin = false;
   LatLng? _pickedOrigin;
   bool _pickingDestination = false;
   LatLng? _pickedDestination;
-  late PersistentBottomSheetController _bottomSheetController;
+  List<dynamic>? _lastCalculations = null;
+  bool _positionsChanged = false;
 
   static const CameraPosition _kStartingPosition = CameraPosition(
     bearing: 0,
@@ -83,6 +84,13 @@ class MapScreenState extends State<MapScreen> {
       _markers = markers;
     });
   }
+
+  void setCalculations(List<dynamic> calculations) {
+    setState(() {
+      _lastCalculations = calculations;
+      _positionsChanged = false;
+    });
+  } 
 
   Future<Set<Marker>> directionsFromRoute(RenderedRoute route) async {
     List<LatLng> points = [];
@@ -392,7 +400,18 @@ class MapScreenState extends State<MapScreen> {
       _markers = markers;
       _pickingDestination = false;
       _pickingOrigin = false;
+      _positionsChanged = true;
     });
+  }
+
+  void updatePickPlace(bool isOrigin, Place place) async {
+    final geolocation = await place.geolocation;
+    setState(() {
+      _pickingOrigin = isOrigin;
+      _pickingDestination = !isOrigin;
+    });
+    await _goTo(geolocation!.coordinates);
+    updatePick(isOrigin);
   }
 
   void renderPath(dynamic path) async {
@@ -418,6 +437,7 @@ class MapScreenState extends State<MapScreen> {
     setState(() {
       _polylines = segments;
       _markers = markers;
+      _positionsChanged = false;
     });
   }
 
@@ -493,12 +513,14 @@ class MapScreenState extends State<MapScreen> {
                     setState(() {
                       _polylines = {};
                     });
-                    _bottomSheetController = Scaffold.of(
+                    Scaffold.of(
                       context,
                     ).showBottomSheet((context) {
                       return Bestpathmenu(
                         startPick: startPick,
                         updatePick: updatePick,
+                        updatePickPlace: updatePickPlace,
+                        centerPos: _kStartingPosition.target,
                       );
                     }, showDragHandle: true);
                   },
@@ -521,6 +543,8 @@ class MapScreenState extends State<MapScreen> {
                               originCoords: _pickedOrigin!,
                               destinationCoords: _pickedDestination!,
                               renderPath: renderPath,
+                              paths: _positionsChanged ? null : _lastCalculations,
+                              setCalculations: setCalculations
                             );
                           },
                         );

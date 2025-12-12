@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:sig_p1_mobile/config.dart';
 import 'package:sig_p1_mobile/models/line.dart';
 import 'package:sig_p1_mobile/models/renderedroute.dart';
 
@@ -20,7 +21,7 @@ class _LinesmenuState extends State<Linesmenu> {
 
   Future<List<Line>> fetchLines() async {
     final response = await http.get(
-      Uri.parse('http://192.168.0.11:8000/api/lines'),
+      Uri.parse('$API_BASE_URL/api/lines'),
     );
     print(response);
     if (response.statusCode == 200) {
@@ -34,7 +35,7 @@ class _LinesmenuState extends State<Linesmenu> {
 
   Future<List<RenderedRoute>> fetchLineRoutes(int line_id) async {
     final response = await http.get(
-      Uri.parse('http://192.168.0.11:8000/api/lines/$line_id/routes'),
+      Uri.parse('$API_BASE_URL/api/lines/$line_id/routes'),
     );
     if (response.statusCode == 200) {
       List<dynamic> jsonList = jsonDecode(response.body);

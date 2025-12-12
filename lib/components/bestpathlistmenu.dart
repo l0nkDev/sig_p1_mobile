@@ -2,18 +2,21 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:http/http.dart' as http;
-import 'package:sig_p1_mobile/models/line.dart';
-import 'package:sig_p1_mobile/models/renderedroute.dart';
+import 'package:sig_p1_mobile/config.dart';
 
 class Bestpathlistmenu extends StatefulWidget {
   final LatLng originCoords;
   final LatLng destinationCoords;
   final void Function(dynamic) renderPath;
+  final void Function(List<dynamic>) setCalculations;
+  final List<dynamic>? paths;
   const Bestpathlistmenu({
     super.key,
     required this.originCoords,
     required this.destinationCoords,
     required this.renderPath,
+    required this.setCalculations,
+    required this.paths,
   });
 
   @override
@@ -21,25 +24,28 @@ class Bestpathlistmenu extends StatefulWidget {
 }
 
 class _LinesmenuState extends State<Bestpathlistmenu> {
-  final TextEditingController _searchController = TextEditingController();
   late Future<List<dynamic>> _pathsFuture;
-
-  String _searchText = '';
 
   Future<List<dynamic>> fetchLines() async {
     final response = await http.get(
       Uri.parse(
-        'http://192.168.0.11:8000/api/routes/best/${widget.originCoords.latitude}/${widget.originCoords.longitude}/${widget.destinationCoords.latitude}/${widget.destinationCoords.longitude}',
+        '$API_BASE_URL/api/routes/best/${widget.originCoords.latitude}/${widget.originCoords.longitude}/${widget.destinationCoords.latitude}/${widget.destinationCoords.longitude}',
       ),
     );
     if (response.statusCode == 200) {
       List<dynamic> jsonList = jsonDecode(response.body);
-      print(jsonList);
-      //List<Line> lines = jsonList.map((i) => Line.fromJson(i)).toList();
+      widget.setCalculations(jsonList);
       return jsonList;
     } else {
       throw Exception("Failed to load lines");
     }
+  }
+
+  Future<List<dynamic>> choosePathSource() async {
+    if (widget.paths != null)
+      return widget.paths!;
+    else
+      return await fetchLines();
   }
 
   Color hexToColor(String hexString) {
@@ -51,7 +57,7 @@ class _LinesmenuState extends State<Bestpathlistmenu> {
   @override
   void initState() {
     super.initState();
-    _pathsFuture = fetchLines();
+    _pathsFuture = choosePathSource();
   }
 
   @override
@@ -105,17 +111,24 @@ class _LinesmenuState extends State<Bestpathlistmenu> {
                               segments.removeLast();
                               return Column(
                                 children: [
-                                  Row(children: segments),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(children: segments),
+                                  ),
                                   Row(
                                     children: [
-                                      Text("Distancia: ${lines[index]["distance"].toStringAsFixed(2)} m."),
+                                      Text(
+                                        "Distancia: ${lines[index]["distance"].toStringAsFixed(2)} m.",
+                                      ),
                                     ],
                                   ),
                                   Row(
                                     children: [
-                                      Text("Trasbordos: ${lines[index]["segments"].length-1}"),
+                                      Text(
+                                        "Trasbordos: ${lines[index]["segments"].length - 1}",
+                                      ),
                                     ],
-                                  )
+                                  ),
                                 ],
                               );
                             },
