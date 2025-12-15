@@ -106,6 +106,8 @@ class _LinesmenuState extends State<Linesmenu> {
                       return Card(
                         child: ListTile(
                           leading: CircleAvatar(
+                            backgroundColor: hexToColor(lines[index].color),
+                            foregroundColor: Colors.white,
                             child: Text(
                               '${int.parse((lines[index].name.substring(1)))}',
                             ),

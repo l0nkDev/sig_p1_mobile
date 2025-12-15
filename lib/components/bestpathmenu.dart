@@ -18,8 +18,6 @@ class Bestpathmenu extends StatefulWidget {
 }
 
 class _BestpathmenuState extends State<Bestpathmenu> {
-  final TextEditingController _originController = TextEditingController();
-  final TextEditingController _destinationController = TextEditingController();
 
   Future<List<RenderedRoute>> fetchLineRoutes(int line_id) async {
     final response = await http.get(

@@ -461,10 +461,11 @@ class MapScreenState extends State<MapScreen> {
             markers: _markers,
             polylines: _polylines,
             circles: _circles,
-            myLocationButtonEnabled: true,
+            myLocationButtonEnabled: false,
             myLocationEnabled: true,
             zoomControlsEnabled: false,
             tiltGesturesEnabled: false,
+            rotateGesturesEnabled: false,
           ),
           if (_pickingPosition || _pickingDestination)
             Center(
@@ -502,10 +503,6 @@ class MapScreenState extends State<MapScreen> {
               onPressed: _lineRoutes.length > 1 ? swapLineRoute : null,
               icon: Icon(Icons.swap_vert),
             ),
-            //IconButton(
-            //  onPressed: onCloseLinesButton,
-            //  icon: Icon(Icons.swap_calls),
-            //),
             Builder(
               builder: (context) {
                 return IconButton(
@@ -532,9 +529,6 @@ class MapScreenState extends State<MapScreen> {
               onPressed:
                   _pickedOrigin != null && _pickedDestination != null
                       ? () {
-                        setState(() {
-                          _polylines = {};
-                        });
                         showModalBottomSheet(
                           showDragHandle: true,
                           context: context,

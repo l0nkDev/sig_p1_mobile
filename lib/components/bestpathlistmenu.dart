@@ -98,6 +98,7 @@ class _LinesmenuState extends State<Bestpathlistmenu> {
                               lines[index]["segments"].forEach((e) {
                                 segments.add(
                                   CircleAvatar(
+                                    foregroundColor: Colors.white,
                                     backgroundColor: hexToColor(
                                       e["route"]["line"]["color"],
                                     ),
@@ -108,7 +109,8 @@ class _LinesmenuState extends State<Bestpathlistmenu> {
                                 );
                                 segments.add(Icon(Icons.arrow_right_alt));
                               });
-                              segments.removeLast();
+                              segments.removeRange(0, 2);
+                              segments.removeRange(segments.length - 3, segments.length);
                               return Column(
                                 children: [
                                   SingleChildScrollView(
@@ -125,7 +127,7 @@ class _LinesmenuState extends State<Bestpathlistmenu> {
                                   Row(
                                     children: [
                                       Text(
-                                        "Trasbordos: ${lines[index]["segments"].length - 1}",
+                                        "Trasbordos: ${lines[index]["segments"].length - 3}",
                                       ),
                                     ],
                                   ),
